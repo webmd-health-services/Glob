@@ -63,7 +63,7 @@ function Find-GlobFile
     Demonstrates how to do a case-sensitive search.
     #>
     [CmdletBinding()]
-    [Output([IO.FileInfo])]
+    [OutputType([IO.FileInfo])]
     param(
         [Parameter(Mandatory)]
         [string[]]

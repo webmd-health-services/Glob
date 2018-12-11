@@ -178,18 +178,3 @@ Describe 'Find-GlobFile.when excluding something found by include' {
     ThenFound 'dir1/file.txt'
     ThenNotFound 'file.txt'
 }
-
-Describe 'Find-GlobFile.when using ? in pattern' {
-    Init
-    GivenFile 'file.txt','pile.txt','tile.txt'
-    WhenFinding -Including '?ile.txt'
-    ThenFound 'file.txt','pile.txt','tile.txt'
-}
-
-Describe 'Find-GlobFile.when using [] in pattern' {
-    Init
-    GivenFile 'file.txt','pile.txt','tile.txt'
-    WhenFinding -Including '[fp]ile.txt'
-    ThenFound 'file.txt','pile.txt'
-    ThenNotFound 'tile.txt'
-}
