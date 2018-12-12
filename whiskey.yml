@@ -9,7 +9,7 @@ Build:
 - Pester4:
     Path: Tests\*.Tests.ps1
 
-- Exec: .whiskey\bin\7-Zip\7z.exe a $(WHISKEY_OUTPUT_DIRECTORY)\Glob.zip .\Glob
+- Exec: Whiskey\bin\7-Zip\7z.exe a $(WHISKEY_OUTPUT_DIRECTORY)\Glob.zip .\Glob
 
 Publish:
 
