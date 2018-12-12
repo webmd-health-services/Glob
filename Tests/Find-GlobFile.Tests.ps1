@@ -71,8 +71,8 @@ function WhenFinding
 
         $Excluding,
 
-        [StringComparison]
-        $StringComparison
+        [Switch]
+        $CaseSensitive
     )
 
     $optionalParams = @{ }
@@ -86,9 +86,9 @@ function WhenFinding
         $optionalParams['Exclude'] = $Excluding
     }
 
-    if( $StringComparison )
+    if( $CaseSensitive )
     {
-        $optionalParams['StringComparison'] = $StringComparison
+        $optionalParams['CaseSensitive'] = $CaseSensitive
     }
 
     Push-Location $TestDrive.FullName
@@ -121,17 +121,9 @@ Describe 'Find-GlobFile.when excluding' {
 Describe 'Find-GlobFile.when rooting include pattern with ''/''' {
     Init
     GivenFile 'fubar.txt', 'dir1/snafu.txt'
-    WhenFinding -Including '/*/*.txt'
+    WhenFinding -Including '*/*.txt'
     ThenFound 'dir1/snafu.txt'
     ThenNotFound 'fubar.txt'
-}
-
-Describe 'Find-GlobFile.when searching multiple directories and rooting include pattern with ''/'' and include contains directory name that matches multipe directories (make sure matcher matches from the root not anywhere)' {
-    Init
-    GivenFile 'dir1/sub/fubar.txt', 'dir2/parent/sub/snafu.txt'
-    WhenFinding -In 'dir1','dir2' -Including '/sub/*.txt'
-    ThenFound 'dir1/sub/fubar.txt'
-    ThenNotFound 'dir2/parent/sub/snafu.txt'
 }
 
 Describe 'Find-GlobFile.when searching multiple directoryes and rooting without ''/'' and include contains directory that matches in multiple directories (make sure matcher matches from the root not anywhere)' {
@@ -166,7 +158,7 @@ Describe 'Find-GlobFile.when using default string comparison' {
 Describe 'Find-GlobFile.when using case-sensitive string comparison' {
     Init
     GivenFile 'file.txt','dir1/FILE.txt'
-    WhenFinding -Including '**/file.txt' -StringComparison Ordinal
+    WhenFinding -Including '**/file.txt' -CaseSensitive
     ThenFound 'file.txt'
     ThenNotFound 'dir1/FILE.txt'
 }
@@ -177,4 +169,19 @@ Describe 'Find-GlobFile.when excluding something found by include' {
     WhenFinding -Including '**/file.txt' -Excluding 'file.txt'
     ThenFound 'dir1/file.txt'
     ThenNotFound 'file.txt'
+}
+
+Describe 'Find-GlobFile.when using ? in pattern' {
+    Init
+    GivenFile 'file.txt','pile.txt','tile.txt'
+    WhenFinding -Including '?ile.txt'
+    ThenFound 'file.txt','pile.txt','tile.txt'
+}
+
+Describe 'Find-GlobFile.when using [] in pattern' {
+    Init
+    GivenFile 'file.txt','pile.txt','tile.txt'
+    WhenFinding -Including '[fp]ile.txt'
+    ThenFound 'file.txt','pile.txt'
+    ThenNotFound 'tile.txt'
 }
