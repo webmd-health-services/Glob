@@ -18,7 +18,7 @@ function Find-GlobFile
     * `[!abc]`: matches any one character *not* inside the brackets
     * `[!a-z]`: matches one character that is *not* in the range defined in the brackets
 
-    By default, the search is case-insensitive. To peform a case-sensitive search, pass the appropriate [StringComparison](https://docs.microsoft.com/en-us/dotnet/api/system.stringcomparison) value to the `StringComparison` parameter.
+    By default, the search is case-insensitive. To peform a case-sensitive search, use the `CaseSensitive` switch.
 
     The `Find-GlobFile` function uses the [DotNet.Glob library](https://www.nuget.org/packages/DotNet.Glob).
 
