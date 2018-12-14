@@ -1,0 +1,49 @@
+TOPIC
+    about_Glob
+
+
+DESCRIPTION
+    Glob is a PowerShell module that lets you find files using advanced glob 
+    syntax. It gives you greater control over files returned in recursive 
+    searches. You can use the standard `*`, `?`, and `[]` wildcard operators 
+    to match file/directory names. You can also use the `**` operator to 
+    match multiple directory names.
+    
+    For example, the pattern `**\*.ps1` would return all `*.ps1` files in the 
+    current and all sub-directories.
+
+    Glob only exposes one function: `Find-GlobFile`. Once you've installed 
+    and loaded the Glob module, run `help Find-GlobFile` for more information 
+    and examples.
+
+
+SYSTEM REQUIREMENTS
+
+    * Windows PowerShell 4+ running under .NET Framework 4.6 or later
+    * PowerShell Core 6+ running under .NET Core.
+
+
+INSTALLATION
+
+    Glob is published to the PowerShell Gallery. To install globally:
+    
+        Install-Module Glob
+    
+    To save a copy locally:
+    
+        Save-Module Glob
+    
+    A ZIP archive of each version is also published to the
+    [releases area on the Glob GitHub project](https://github.com/webmd-health-services/Glob/releases).
+
+
+USING
+
+    If you've installed Glob globally, you can run `help Find-GlobFile`.
+    
+    If you've saved Glob locally, import it, then use `Find-GlobFile`:
+    
+        # Assumes you've saved the module to `PSModules`
+        Import-Module '.\PSModules\Glob'
+        help Find-GlobFile
+    
