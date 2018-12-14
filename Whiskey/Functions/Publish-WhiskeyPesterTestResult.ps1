@@ -24,9 +24,9 @@ function Publish-WhiskeyPesterTestResult
     Resolve-Path -Path $Path -ErrorAction Stop |
         Select-Object -ExcludeProperty 'ProviderPath' |
         ForEach-Object { 
-            $resultPath = $_
-            Write-Verbose -Message ('Uploading Pester test result file ''{0}'' to AppVeyor at ''{1}''.' -f $resultPath,$uploadUri)
+            [string]$resultPath = $_
+            Write-Verbose -Message ('Uploading Pester test result file "{0}" to AppVeyor at "{1}"g.' -f $resultPath,$uploadUri)
             # PowerShell Core can't find the UploadFile method, so we have to use refelction.
-            $uploadFileMethod.Invoke($webClient,@($uploadUri,$resultPath))
+            $webClient.UploadFile($uploadUri,$resultPath)
         }
 }
