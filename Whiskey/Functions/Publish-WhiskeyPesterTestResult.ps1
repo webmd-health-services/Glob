@@ -25,6 +25,6 @@ function Publish-WhiskeyPesterTestResult
             $resultPath = $_
             Write-Verbose -Message ('Uploading Pester test result file ''{0}'' to AppVeyor at ''{1}''.' -f $resultPath,$uploadUri)
             $webClient.UploadFile | Format-List | Out-String | Write-Verbose -Verbose
-            $webClient.UploadFile($uploadUri, $resultPath)
+            $webClient.UploadFile([uri]$uploadUri, $resultPath)
         }
 }
