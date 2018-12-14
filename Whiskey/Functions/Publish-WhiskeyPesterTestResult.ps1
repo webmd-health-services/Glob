@@ -18,7 +18,7 @@ function Publish-WhiskeyPesterTestResult
     }
 
     $webClient = New-Object 'Net.WebClient'
-    $uploadUri = 'https://ci.appveyor.com/api/testresults/nunit/{0}' -f $env:APPVEYOR_JOB_ID
+    [uri]$uploadUri = 'https://ci.appveyor.com/api/testresults/nunit/{0}' -f $env:APPVEYOR_JOB_ID
     Resolve-Path -Path $Path -ErrorAction Stop |
         Select-Object -ExcludeProperty 'ProviderPath' |
         ForEach-Object { 
