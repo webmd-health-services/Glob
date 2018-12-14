@@ -43,7 +43,7 @@ function Find-GlobFile
     Returns all `*.ps1` files except files that match `*.Tests.ps1` under the current directory and all its sub-directories.
 
     .EXAMPLE
-    Find-GlobFile -Path '.' -Include 'Find-GlobFile.ps1' -StringComparison Ordinal
+    Find-GlobFile -Path '.' -Include 'Find-GlobFile.ps1' -CaseSensitive
 
     Demonstrates how to do a case-sensitive search.
     #>
