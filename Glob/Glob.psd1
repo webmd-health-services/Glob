@@ -12,7 +12,7 @@
     RootModule = 'Glob.psm1'
 
     # Version number of this module.
-    ModuleVersion = '0.0.0'
+    ModuleVersion = '0.0.1'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -110,7 +110,8 @@
 
             # ReleaseNotes of this module
             ReleaseNotes = '
-Initial module version. It has one function: `Find-GlobFile`, used to find files using advanced globbing syntax.
+* Fixed: Find-GlobFile doesn''t work on Linux/macOS.
+* Fixed: Find-GlobFile doesn''t respect user''s preference variables.
 '
 
         } # End of PSData hashtable
