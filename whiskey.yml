@@ -22,7 +22,6 @@ Build:
 - Pester4:
     Path: Tests\*.Tests.ps1
     Verbose: false
-    Debug: true
 
 - Zip:
     ArchivePath: .output\Glob.zip
