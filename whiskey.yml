@@ -1,24 +1,49 @@
 
 PublishOn:
- - master
- 
+- master
+- prerelease
+
 Build:
 - Version:
     Path: Glob\Glob.psd1
+    Prerelease:
+    - prerelease: beta$(WHISKEY_BUILD_NUMBER)
+
+# Dot-sourcing a lot of files when importing a module varys from expensive to really expensive. Merge them into the module manifest.
+- MergeFile:
+    OnlyBy: BuildServer
+    Path:
+    - Glob\Functions\*.ps1
+    DestinationPath:
+    - Glob\Glob.psm1
+    TextSeparator: "$(NewLine)$(NewLine)"
+    DeleteSourceFiles: true
 
 - Pester4:
     Path: Tests\*.Tests.ps1
+    Verbose: false
+    Debug: true
 
-- Exec: Whiskey\bin\7-Zip\7z.exe a $(WHISKEY_OUTPUT_DIRECTORY)\Glob.zip .\Glob
+- Zip:
+    ArchivePath: .output\Glob.zip
+    Path: 
+    - Glob
+    Exclude:
+    - "*.pdb"
 
 Publish:
-
+- AppVeyorWaitForBuildJobs:
+    UnlessExists: env:APPVEYOR_PULL_REQUEST_NUMBER
+    IfExists: env:APPVEYOR_BEARER_TOKEN
+    OnlyOnPlatform: Windows
+    ApiKeyID: AppVeyor
 - PublishPowerShellModule:
+    OnlyOnPlatform: Windows
+    UnlessExists: env:APPVEYOR_PULL_REQUEST_NUMBER
     RepositoryName: PSGallery
     RepositoryUri: https://powershellgallery.com/api/v2/
     Path: Glob
     ApiKeyID: PowerShellGallery
-
 - SetVariableFromPowerShellDataFile:
     Path: Glob\Glob.psd1
     Variables:
@@ -26,6 +51,8 @@ Publish:
             PSData:
                 ReleaseNotes: RELEASE_NOTES
 - GitHubRelease:
+    OnlyOnPlatform: Windows
+    UnlessExists: env:APPVEYOR_PULL_REQUEST_NUMBER
     RepositoryName: webmd-health-services/Glob
     ApiKeyID: github.com
     Tag: $(WHISKEY_SEMVER2_NO_BUILD_METADATA)

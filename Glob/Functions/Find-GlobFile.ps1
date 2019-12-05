@@ -1,4 +1,4 @@
-﻿
+
 function Find-GlobFile
 {
     <#
@@ -69,7 +69,8 @@ function Find-GlobFile
     )
 
     Set-StrictMode -Version 'Latest'
-
+    Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+    
     foreach( $rootPath in $Path )
     {
         $rootPath = Resolve-Path -Path $rootPath | Select-Object -ExpandProperty 'ProviderPath'
@@ -89,7 +90,10 @@ function Find-GlobFile
         {
             foreach( $fileInfo in (Get-ChildItem -Path $rootPath -File -Recurse) )
             {
-                $relativePath = $fileInfo.FullName | Resolve-Path -Relative | ForEach-Object { $_ -replace '^\.(\\|//)','' }
+                $relativePath = 
+                    $fileInfo.FullName | 
+                    Resolve-Path -Relative | 
+                    ForEach-Object { $_ -replace '^\.(\\|/)','' }
                 $matches = $false
                 foreach( $includeGlob in $includeGlobs )
                 {
