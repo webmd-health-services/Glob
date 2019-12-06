@@ -9,7 +9,11 @@ Build:
     Prerelease:
     - prerelease: beta$(WHISKEY_BUILD_NUMBER)
 
-# Dot-sourcing a lot of files when importing a module varys from expensive to really expensive. Merge them into the module manifest.
+- GetPowerShellModule:
+    Name: Carbon
+    Version: 2.*
+
+# Dot-sourcing a lot of files when importing a module varies from expensive to really expensive. Merge them into the module manifest.
 - MergeFile:
     OnlyBy: BuildServer
     Path:
@@ -22,7 +26,6 @@ Build:
 - Pester4:
     Path: Tests\*.Tests.ps1
     Verbose: false
-    Debug: true
 
 - Zip:
     ArchivePath: .output\Glob.zip

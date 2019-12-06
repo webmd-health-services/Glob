@@ -1,14 +1,44 @@
 
+#Requires -Version 5.1
+Set-StrictMode -Version 'Latest'
+
 Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\Glob' -Resolve) -Force
+Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\PSModules\Carbon' -Resolve) -Force
 
 $testRoot = $null
 $result = $null
 
+function GivenDirectory
+{
+    param(
+        [String[]]$Path,
+
+        [switch]$Hidden
+    )
+
+    foreach( $pathItem in $Path )
+    {
+        $fullPath = Join-Path -Path $testRoot -ChildPath $pathItem
+
+        if( -not (Test-Path -Path $fullPath -PathType Container) )
+        {
+            New-Item -Path $fullPath -ItemType 'Directory' -Force
+        }
+
+        if( $Hidden )
+        {
+            $item = Get-Item $fullPath -Force
+            $item.Attributes = $item.Attributes -bor [IO.FileAttributes]::Hidden
+        }
+    }
+}
+
 function GivenFile
 {
     param(
-        [string[]]
-        $Path
+        [String[]]$Path,
+
+        [switch]$Hidden
     )
 
     foreach( $pathItem in $Path )
@@ -23,13 +53,20 @@ function GivenFile
 
         if( -not (Test-Path -Path $fullPath -PathType Leaf) )
         {
-            New-Item -Path $fullPath -ItemType 'File'
+            New-Item -Path $fullPath -ItemType 'File' -Force
+        }
+
+        if( $Hidden )
+        {
+            $item = Get-Item $fullPath -Force
+            $item.Attributes = $item.Attributes -bor [IO.FileAttributes]::Hidden
         }
     }
 }
 
 function Init
 {
+    $Global:Error.Clear()
     $script:result = $null
     $script:testRoot = Join-Path -Path $TestDrive.FullName -ChildPath ([IO.Path]::GetRandomFileName())
     New-Item -Path $testRoot -ItemType 'Directory'
@@ -70,8 +107,9 @@ function WhenFinding
 
         $Excluding,
 
-        [Switch]
-        $CaseSensitive
+        [switch]$CaseSensitive,
+
+        [switch]$Force
     )
 
     $optionalParams = @{ }
@@ -88,6 +126,11 @@ function WhenFinding
     if( $CaseSensitive )
     {
         $optionalParams['CaseSensitive'] = $CaseSensitive
+    }
+
+    if( $Force )
+    {
+        $optionalParams['Force'] = $Force
     }
 
     Push-Location $testRoot
@@ -153,9 +196,9 @@ Describe 'Find-GlobFile.when searching multiple directoryes and rooted with ''**
 Describe 'Find-GlobFile.when no include is used' {
     It 'should find all files' {
         Init
-        GivenFile 'file.txt','dir1/fubar.txt'
+        GivenFile 'file.txt','dir1/fubar.pdf','dir2/dir3/snafu.gif'
         WhenFinding 
-        ThenFound 'file.txt','dir1/fubar.txt'
+        ThenFound 'file.txt','dir1/fubar.pdf','dir2/dir3/snafu.gif'
     }
 }
 
@@ -204,5 +247,72 @@ Describe 'Find-GlobFile.when using [] in pattern' {
         WhenFinding -Including '[fp]ile.txt'
         ThenFound 'file.txt','pile.txt'
         ThenNotFound 'tile.txt'
+    }
+}
+
+if( -not (Test-Path -Path 'variable:IsWindows') )
+{
+    $IsWindows = $true
+}
+
+if( $IsWindows )
+{
+    Describe 'Find-GlobFile.when files are hidden' {
+        It 'should not return those files' {
+            Init
+            GivenFile 'file.txt' -Hidden
+            GivenDirectory 'hidden' -Hidden
+            GivenFile 'hidden\file2.txt'
+            WhenFinding -Including '**\file*'
+            ThenNotFound 'file.txt','hidden\file2.txt'
+        }
+    }
+
+    Describe 'Find-GlobFile.when using the force to find hidden files' {
+        It 'should not return those files' {
+            Init
+            GivenFile 'file.txt' -Hidden
+            GivenDirectory 'hidden' -Hidden
+            GivenFile 'hidden\file2.txt'
+            WhenFinding -Including '**\file*' -Force
+            ThenFound 'file.txt','hidden\file2.txt'
+        }
+    }
+}
+else
+{
+    Describe 'Find-GlobFile.when files are hidden' {
+        It 'should not return those files' {
+            Init
+            GivenFile '.file', '.hidden\file2.txt'
+            WhenFinding -Including '**\file*'
+            ThenNotFound '.file','.hidden\file2.txt'
+        }
+    }
+
+    Describe 'Find-GlobFile.when using the force to find hidden files' {
+        It 'should not return those files' {
+            Init
+            GivenFile '.file','.hidden\file2.txt'
+            WhenFinding -Including '**\file*' -Force
+            ThenFound '.file','.hidden\file2.txt'
+        }
+    }
+}
+
+if( $IsWindows )
+{
+    Describe 'Find-GlobFile.when excluding a directory' {
+        It 'should not recurse into excluded directories' {
+            Init
+            GivenFile 'file.txt','excluded\file.txt'
+            # Create a circular junction. When you recurse too deeply, eventually PowerShell throws an error that you've
+            # gone too deep. If it got excluded properly, there won't be an error.
+            New-CJunction -Link (Join-Path -Path $testRoot -ChildPath 'excluded\circular') `
+                          -Target (Join-Path -Path $testRoot -ChildPath 'excluded')
+            WhenFinding -Including '**/file.txt' -Excluding '**/excluded/**'
+            ThenFound 'file.txt'
+            $Global:Error | Should -BeNullOrEmpty
+        }
     }
 }
