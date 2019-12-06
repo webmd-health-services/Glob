@@ -3,6 +3,7 @@
 Set-StrictMode -Version 'Latest'
 
 Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\Glob' -Resolve) -Force
+Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\PSModules\Carbon' -Resolve) -Force
 
 $testRoot = $null
 $result = $null
@@ -65,6 +66,7 @@ function GivenFile
 
 function Init
 {
+    $Global:Error.Clear()
     $script:result = $null
     $script:testRoot = Join-Path -Path $TestDrive.FullName -ChildPath ([IO.Path]::GetRandomFileName())
     New-Item -Path $testRoot -ItemType 'Directory'
@@ -248,7 +250,12 @@ Describe 'Find-GlobFile.when using [] in pattern' {
     }
 }
 
-if( -not (Test-Path -Path 'variable:IsWindows') -or $IsWindows )
+if( -not (Test-Path -Path 'variable:IsWindows') )
+{
+    $IsWindows = $true
+}
+
+if( $IsWindows )
 {
     Describe 'Find-GlobFile.when files are hidden' {
         It 'should not return those files' {
@@ -289,6 +296,23 @@ else
             GivenFile '.file','.hidden\file2.txt'
             WhenFinding -Including '**\file*' -Force
             ThenFound '.file','.hidden\file2.txt'
+        }
+    }
+}
+
+if( $IsWindows )
+{
+    Describe 'Find-GlobFile.when excluding a directory' {
+        It 'should not recurse into excluded directories' {
+            Init
+            GivenFile 'file.txt','excluded\file.txt'
+            # Create a circular junction. When you recurse too deeply, eventually PowerShell throws an error that you've
+            # gone too deep. If it got excluded properly, there won't be an error.
+            New-CJunction -Link (Join-Path -Path $testRoot -ChildPath 'excluded\circular') `
+                          -Target (Join-Path -Path $testRoot -ChildPath 'excluded')
+            WhenFinding -Including '**/file.txt' -Excluding '**/excluded/**'
+            ThenFound 'file.txt'
+            $Global:Error | Should -BeNullOrEmpty
         }
     }
 }

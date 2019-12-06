@@ -113,24 +113,24 @@ function Find-GlobFile
         {
             if( -not $IsDirectory )
             {
-                $matches = $false
+                $isIncluded = $false
                 foreach( $includeGlob in $includeGlobs )
                 {
                     if( $includeGlob.IsMatch($relativePath) )
                     {
                         $whatMatched = $includeGlob
-                        $matches = $true
+                        $isIncluded = $true
                         break
                     }
                 }
 
-                if( -not $matches )
+                if( -not $isIncluded )
                 {
                     return $false
                 }
             }
 
-            $matches = $true
+            $isIncluded = $true
             foreach( $excludeGlob in $excludeGlobs )
             {
                 if( $excludeGlob.IsMatch($relativePath) )
@@ -138,12 +138,12 @@ function Find-GlobFile
                     $showMessage = $true
                     $result = '!'
                     $whatMatched = $excludeGlob
-                    $matches = $false
+                    $isIncluded = $false
                     break
                 }
             }
 
-            return $matches
+            return $isIncluded
         }
         finally
         {
