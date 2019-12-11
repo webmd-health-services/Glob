@@ -88,6 +88,12 @@ function Find-GlobFile
     Set-StrictMode -Version 'Latest'
     Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     
+    $errorActionParam = @{ }
+    if( $ErrorActionPreference -eq [Management.Automation.ActionPreference]::Ignore )
+    {
+        $errorActionParam['ErrorAction'] = [Management.Automation.ActionPreference]::Ignore
+    }
+
     function Test-GlobMatch
     {
         param(
@@ -96,7 +102,12 @@ function Find-GlobFile
             [switch]$IsDirectory
         )
 
-        $relativePath = Resolve-Path -LiteralPath $InputObject.FullName -Relative 
+        $relativePath = Resolve-Path -LiteralPath $InputObject.FullName -Relative @errorActionParam
+        if( -not $relativePath )
+        {
+            return $false
+        }
+
         if( $relativePath.Length -ge 2 -and `
             $relativePath[0] -eq '.' -and `
             ($relativePath[1] -eq [IO.Path]::DirectorySeparatorChar -or `

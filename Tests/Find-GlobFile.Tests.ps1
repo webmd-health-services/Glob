@@ -316,3 +316,41 @@ if( $IsWindows )
         }
     }
 }
+
+# Only really works on Windows. The *.sys files in the root of the system drive are read-able by `Get-ChildItem -Force`,
+# but no by `Resolve-Path`. Handle this special situation.
+Describe 'Find-GlobFile.when user requests system files they do not have access to' {
+    It 'should ignore those files and not write any errors' {
+        Init
+        $rootPath = Resolve-Path -Path ([IO.Path]::DirectorySeparatorChar)
+        $exclude = Get-ChildItem -Path $rootPath -Directory -Force | ForEach-Object { '**/{0}/**' -f $_.Name }
+        $files = Get-ChildItem -Path $rootPath -File
+        $numExpectedErrors = 
+            Get-ChildItem -Path $rootPath -Force -File | 
+            Where-Object { -not ($_ | Resolve-Path -ErrorAction Ignore) } |
+            Measure-Object |
+            Select-Object -ExpandProperty 'Count'
+        $include = $files | Select-Object -ExpandProperty 'Name'
+        $result = Find-GlobFile -Path $rootPath -Include $include -Exclude $exclude -Force -ErrorAction SilentlyContinue
+        $Global:Error | Should -HaveCount $numExpectedErrors
+        $expectedFiles = $files | Select-Object -ExpandProperty 'FullName' | Sort-Object
+        $result | Select-Object -ExpandProperty 'FullName' | Sort-Object | Should -Be $expectedFiles
+    }
+}
+
+# Only really works on Windows. The *.sys files in the root of the system drive are read-able by `Get-ChildItem -Force`,
+# but no by `Resolve-Path`. Use this situation to make sure Resolve-Path doesn't fail incorrectly when error action is
+# ignore.
+Describe 'Find-GlobFile.when ignoring errors' {
+    It 'should not write any errors' {
+        Init
+        $rootPath = Resolve-Path -Path ([IO.Path]::DirectorySeparatorChar)
+        $exclude = Get-ChildItem -Path $rootPath -Directory -Force | ForEach-Object { '**/{0}/**' -f $_.Name }
+        $files = Get-ChildItem -Path $rootPath -File
+        $include = $files | Select-Object -ExpandProperty 'Name'
+        $result = Find-GlobFile -Path $rootPath -Include $include -Exclude $exclude -Force -ErrorAction Ignore
+        $Global:Error | Should -BeNullOrEmpty
+        $expectedFiles = $files | Select-Object -ExpandProperty 'FullName'
+        $result | Select-Object -ExpandProperty 'FullName' | Sort-Object | Should -Be $expectedFiles
+    }
+}
