@@ -12,7 +12,7 @@
     RootModule = 'Glob.psm1'
 
     # Version number of this module.
-    ModuleVersion = '0.1.0'
+    ModuleVersion = '0.1.1'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -110,11 +110,8 @@
 
             # ReleaseNotes of this module
             ReleaseNotes = '
-* Fixed: `Find-GlobFile` doesn''t work on Linux/macOS.
-* Fixed: `Find-GlobFile` doesn''t respect user''s preference variables.
-* Improved performance. If a directory matches an excluded pattern, Glob no longer recurses into it to find files that are just going to be excluded.
-* Added debug output. If you want to see what files Glob is looking at and what patterns are matching which files and which patterns and excluding which files, set your DebugPreference to `Continue`.
-* Added `-Force` switch to `Find-GlobFile` to include hidden files/folders in searches.
+* Fixed: `Find-GlobFile` fails on Windows when searching includes the *.sys files in the root of the system drive.
+* Fixed: `Find-GlobFile` doesn''t properly ignore some errors when setting `ErrorAction` to `Ignore`.
 '
 
         } # End of PSData hashtable
